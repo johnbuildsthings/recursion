@@ -47,7 +47,6 @@ var stringifyJSON = function(set) {
 
     //test for undefined and functions
     if(value === undefined || typeof value === 'function' || count>keys.length){
-      console.log(count);
       if(count++ === keys.length){
         return stack + '}';
       }
