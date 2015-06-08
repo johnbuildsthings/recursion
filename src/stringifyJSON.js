@@ -3,8 +3,8 @@
 
 // but you don't so you're going to write it from scratch:
 
-var exports = module.exports = {};
-exports.stringifyJSON = function(set) {
+//var exports = module.exports = {};
+var stringifyJSON = function(set) {
   var stack = arguments[1] || '';
   var element;
   var base = function(element){
@@ -24,14 +24,14 @@ exports.stringifyJSON = function(set) {
     element = arr.shift();
     stack = base(element, stack);
     if(Array.isArray(element) || (typeof element === 'object' && element !== null)){
-      stack += exports.stringifyJSON(element);
+      stack += stringifyJSON(element);
       if(arr.length>0){
         stack += ',';
       }
-      return exports.stringifyJSON(arr, stack);
+      return stringifyJSON(arr, stack);
     }else if(arr.length>0){
       stack+=',';
-      return exports.stringifyJSON(arr, stack);
+      return stringifyJSON(arr, stack);
     }else{
       stack+=']';
       return stack;  
@@ -45,16 +45,27 @@ exports.stringifyJSON = function(set) {
     var element = keys[count];
     var value = set[keys[count]];
 
+    //test for undefined and functions
+    if(value === undefined || typeof value === 'function' || count>keys.length){
+      console.log(count);
+      if(count++ === keys.length){
+        return stack + '}';
+      }
+      return stringifyJSON(set, stack, count++);
+    }
+
     //base case
     stack = base(element, stack);
     
     //recursive cases
     if((typeof value === 'object' && value !== null)|| Array.isArray(value)){
-      stack += ':' + exports.stringifyJSON(value);
-      if(count++ < keys.length-1){
-        stack +=',';
-      }
-      return exports.stringifyJSON(set, stack, count);
+      if(value !== undefined || typeof value !== 'function'){
+        stack += ':' + stringifyJSON(value);
+        if(count++ < keys.length-1){
+          stack +=',';
+        }
+      }else{count++}
+      return stringifyJSON(set, stack, count);
     }else if(count <= keys.length){
       value = base(value);
       if(count++ < keys.length){
@@ -62,7 +73,7 @@ exports.stringifyJSON = function(set) {
         if(count < keys.length){
           stack += ',';
         }
-        return exports.stringifyJSON(set, stack, count);
+        return stringifyJSON(set, stack, count);
       }else{
         stack += '}';
         return stack;
@@ -73,16 +84,3 @@ exports.stringifyJSON = function(set) {
     return stack;
   }
 };
-
-console.log('json 1: ',JSON.stringify({
-    'functions': function(){},
-    'undefined': undefined
-  }));
-
-console.log('json 2: ',JSON.stringify(undefined));
-//console.log('json 3: ',JSON.stringify(function()));
-
-console.log(exports.stringify({
-    'functions': function(){},
-    'undefined': undefined
-  }));
