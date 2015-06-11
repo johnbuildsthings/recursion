@@ -6,7 +6,7 @@ var parseJSON = function(json) {
   
   var type = arguments [1] || json[0];
   //var content = json.split(',') || json;
-  
+  //console.log(json);
   //base case
   if(type === '{'){
     json = json.slice(1,json.length-1);
@@ -15,24 +15,31 @@ var parseJSON = function(json) {
     json = json.slice(1,json.length-1);
     type = [];
   }
+  console.log(json);
+  var pattern = /,(?=([^"\\]*(\\.|"([^"\\]*\\.)*[^\\]*"))*[^"]*$)/g;
+  var pattern2 = /\,(?=([^"]*"[^"]*")*[^"]*$)/g;
   if(json.length>0){
-  var content = json.split(',') || json;
+    var content;
+    if(Array.isArray(json)){
+      content = json;
+    }else{
+    content = json.split(pattern2);
+    }
   }else{
     return type;
   }
-  console.log(type);
+  console.log(content);
   //recursive
   if(Array.isArray(type)){
     return type;
   }
   if(typeof type === 'object'){
-    //console.log('test1');
+    //console.log('test1', content);
     if(content.length >0){
       var element = content.shift();
-      element = element.split(':');
-      element[0] = remove(element[0]);
-      type[element[0]] = element[1];
-      console.log(type);
+      element = element.split(': ');
+      type[remove(element[0])] = remove(element[1]);
+      //content = (',').join(content);
       return parseJSON(content, type);
     }
   }
@@ -40,15 +47,17 @@ var parseJSON = function(json) {
 };
 
 var remove = function(string){
-  if(Number(string) === NaN){
-    var single = string.slice(1,string.length-1)
-    return single;
-  }else if(string === 'null'){
-    return null;
-  }else{
-    var single = string.slice(1,string.length-1)
-    return single;
+  var reg = /"/g;
+  console.log('string: ', string);
+  string = string.replace(reg, '');
+  if(string === 'true'){
+    return true
+  }else if (string === 'false'){
+    return false;
+  }else if (string === 'null'){
+    return null
   }
+  return string;
 }
 
 var tests = [
@@ -66,5 +75,6 @@ var tests = [
 
 tests.forEach(function(test){
   console.log('testing: ', parseJSON(test));
+  console.log('control: ', JSON.parse(test));
 });
 
